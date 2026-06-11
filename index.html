@@ -161,6 +161,19 @@ input, select{
     background:#0b1220;
     color:white;
 }
+
+.goal-option{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin:8px 0;
+    cursor:pointer;
+}
+
+.goal-option input{
+    width:auto;
+    margin:0;
+}
 </style>
 </head>
 
@@ -524,7 +537,9 @@ function getCurrentGoal(){
 function openGoalSelector(){
 
     closeMenu();
-
+    const currentGoal = getCurrentGoal();
+    const settings = getGoalSettings();
+    const isCustom = settings[activeChannel]?.type === "custom";
     const subscribers = current.subscribers;
 
     let html = "";
@@ -534,25 +549,34 @@ function openGoalSelector(){
         if(goal <= subscribers){
             continue;
         }
-
+        
         html += `
-        <label style="display:block;margin:8px 0;">
+        <label class="goal-option">
+        
             <input
                 type="radio"
                 name="goal"
-                value="${goal}">
-            ${goal.toLocaleString()}
-        </label>`;
+                value="${goal}"
+                ${goal === currentGoal ? "checked" : ""}
+            >
+        
+            <span>${goal.toLocaleString()}</span>
+        
+        </label>
+        `;
     }
 
     html += `
     <hr>
 
-    <label>
+    <label  class="goal-option">
         <input
+            id="customGoalRadio"
             type="radio"
             name="goal"
-            value="custom">
+            value="custom"
+            ${isCustom ? "checked" : ""}
+        >
         Власна ціль
     </label>
 
@@ -560,7 +584,8 @@ function openGoalSelector(){
         id="customGoal"
         inputmode="numeric"
         pattern="[0-9]*"
-        placeholder="Введіть число">
+        placeholder="Введіть число"
+        value="${isCustom ? currentGoal : "">
     `;
 
     html += `
@@ -569,6 +594,8 @@ function openGoalSelector(){
     </button>
     `;
 
+
+    
     document.getElementById("modalHeader")
         .textContent = "Вибір цілі";
 
@@ -577,6 +604,44 @@ function openGoalSelector(){
 
     document.getElementById("modal")
         .style.display = "flex";
+    
+    setTimeout(() => {
+
+        const input =
+            document.getElementById("customGoal");
+    
+        if(!input) return;
+    
+        input.addEventListener("input", () => {
+    
+            input.value =
+                input.value.replace(/\D/g, "");
+    
+        });
+    
+    }, 0);
+    setTimeout(() => {
+
+        const input =
+            document.getElementById("customGoal");
+    
+        const radio =
+            document.getElementById("customGoalRadio");
+    
+        if(!input || !radio) return;
+    
+        input.addEventListener("input", () => {
+    
+            input.value =
+                input.value.replace(/\D/g, "");
+    
+            if(input.value.length > 0){
+                radio.checked = true;
+            }
+    
+        });
+    
+    }, 0);
 }
 
 function saveGoalSelection(){
