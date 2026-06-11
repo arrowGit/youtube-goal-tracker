@@ -177,7 +177,7 @@ input, select{
 <div>
 <div class="title" id="title">Завантаження...</div>
 <div class="subtext">
-<span id="subs">-</span> підписників •
+<span id="subs">-</span> •
 <span id="created">-</span>
 </div>
 </div>
@@ -387,7 +387,7 @@ async function loadChannel(handle){
     current = data;
 
     document.getElementById("title").textContent = data.title;
-    document.getElementById("subs").textContent = data.subscribers.toLocaleString();
+    document.getElementById("subs").textContent = data.subscribers.toLocaleString() + subsCase(data.subscribers.toLocaleString());
 
     const created = new Date(data.createdAt);
     document.getElementById("created").textContent =
