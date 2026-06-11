@@ -259,11 +259,13 @@ const API = "https://youtube-stats-api.oleh-strilets.workers.dev";
 let channels = [];
 let current = null;
 let mode = "add";
-
+let activeChannel = null;
+    
 /* INIT */
 load();
 
 function load(){
+
     const saved = localStorage.getItem("yt_channels");
 
     if(saved){
@@ -273,8 +275,11 @@ function load(){
         save();
     }
 
+    const savedActive = localStorage.getItem("yt_active_channel");
+    activeChannel = savedActive || channels[0];
+
     renderGoalOptions();
-    loadChannel(channels[0]);
+    loadChannel(activeChannel);
 }
 
 /* STORAGE */
@@ -296,13 +301,41 @@ function openAdd(){
 }
 
 function openSwitch(){
+
     mode = "switch";
 
-    const input = document.getElementById("channelInput");
-    input.outerHTML = buildSelect();
+    const list = channels.map(ch => `
+        <button class="channel-btn" onclick="selectChannel('${ch}')">
+            ${ch}
+        </button>
+    `).join("");
 
     document.getElementById("modalTitle").textContent = "Змінити канал";
+
+    document.querySelector(".modal-content").innerHTML = `
+        <div style="font-weight:700;margin-bottom:10px;">Змінити канал</div>
+
+        <div style="
+            max-height:260px;
+            overflow-y:auto;
+            display:flex;
+            flex-direction:column;
+            gap:8px;
+        ">
+            ${list}
+        </div>
+
+        <button onclick="openAdd()" style="margin-top:12px;">➕ Додати канал</button>
+        <button onclick="closeModal()" style="background:#1f2937;">Закрити</button>
+    `;
+
     document.getElementById("modal").style.display = "flex";
+}
+
+function selectChannel(ch){
+    setActiveChannel(ch);
+    closeModal();
+    loadChannel(ch);
 }
 
 function buildSelect(){
@@ -312,7 +345,6 @@ function buildSelect(){
 
 function closeModal(){
     document.getElementById("modal").style.display = "none";
-    location.reload();
 }
 
 /* SAVE CHANNEL */
@@ -347,7 +379,11 @@ async function loadChannel(handle){
     document.getElementById("created").textContent =
         created.toLocaleDateString("uk-UA");
 
-    const avatar = data.thumbnails?.medium?.url || "";
+    const avatar =
+    data.thumbnails?.high?.url ||
+    data.thumbnails?.medium?.url ||
+    data.thumbnails?.default?.url ||
+    "";
     document.getElementById("avatar").src = avatar;
 
     updateStats();
@@ -420,6 +456,11 @@ function toggleDetails(){
     }
 }
 
+function setActiveChannel(ch){
+    activeChannel = ch;
+    localStorage.setItem("yt_active_channel", ch);
+}
+    
 </script>
 
 </body>
