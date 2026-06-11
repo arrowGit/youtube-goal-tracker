@@ -240,16 +240,15 @@ input, select{
 
 <!-- MODAL -->
 <div class="modal" id="modal">
-<div class="modal-content">
+  <div class="modal-content">
+    
+    <div id="modalHeader"></div>
+    
+    <div id="modalBody"></div>
 
-<div id="modalTitle">Додати канал</div>
-
-<input id="channelInput" placeholder="@handle">
-
-<button onclick="saveChannel()">Зберегти</button>
-<button onclick="closeModal()" style="background:#1f2937;">Скасувати</button>
-
+  </div>
 </div>
+
 </div>
 
 <script>
@@ -295,6 +294,7 @@ function toggleMenu(){
 
 /* MODAL */
 function openAdd(){
+    closeMenu();
     mode = "add";
     document.getElementById("modalTitle").textContent = "Додати канал";
     document.getElementById("modal").style.display = "flex";
@@ -302,40 +302,39 @@ function openAdd(){
 
 function openSwitch(){
 
+    closeMenu();
     mode = "switch";
 
+    document.getElementById("modalHeader").textContent = "Змінити канал";
+
     const list = channels.map(ch => `
-        <button class="channel-btn" onclick="selectChannel('${ch}')">
+        <button onclick="selectChannel('${ch}')"
+            style="width:100%;padding:10px;margin:5px 0;border-radius:10px;background:#0b1220;color:white;border:1px solid #1f2937;">
             ${ch}
         </button>
     `).join("");
 
-    document.getElementById("modalTitle").textContent = "Змінити канал";
-
-    document.querySelector(".modal-content").innerHTML = `
-        <div style="font-weight:700;margin-bottom:10px;">Змінити канал</div>
-
-        <div style="
-            max-height:260px;
-            overflow-y:auto;
-            display:flex;
-            flex-direction:column;
-            gap:8px;
-        ">
+    document.getElementById("modalBody").innerHTML = `
+        <div style="max-height:260px;overflow-y:auto;display:flex;flex-direction:column;">
             ${list}
         </div>
 
-        <button onclick="openAdd()" style="margin-top:12px;">➕ Додати канал</button>
-        <button onclick="closeModal()" style="background:#1f2937;">Закрити</button>
+        <button onclick="openAdd()">➕ Додати канал</button>
+        <button onclick="closeModal()">Закрити</button>
     `;
 
     document.getElementById("modal").style.display = "flex";
+}
+    
+function closeMenu(){
+    document.getElementById("menu").style.display = "none";
 }
 
 function selectChannel(ch){
     setActiveChannel(ch);
     closeModal();
     loadChannel(ch);
+    renderGoalOptions();
 }
 
 function buildSelect(){
