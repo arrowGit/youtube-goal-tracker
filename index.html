@@ -446,7 +446,7 @@ function updateStats(){
 
     if(current.subscribers < goal && avg > 0){
         remaining = Math.ceil((goal - current.subscribers) / avg);
-        document.getElementById("remaining").textContent = remaining + daysCase(days);
+        document.getElementById("remaining").textContent = remaining + daysCase(remaining);
     } else {
         document.getElementById("remaining").textContent = "Досягнуто";
     }
