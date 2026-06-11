@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>YouTube Tracker</title>
+<title>YouTube Dashboard</title>
 
 <style>
 body{
     margin:0;
-    font-family: system-ui, Arial;
+    font-family:system-ui;
     background:#0b1220;
     color:#e5e7eb;
     display:flex;
@@ -25,41 +25,57 @@ body{
     background:#111827;
     border:1px solid #1f2937;
     border-radius:16px;
-    padding:16px;
-    margin-top:12px;
+    padding:14px;
+    margin-bottom:12px;
 }
 
 h1{
     font-size:18px;
-    margin:0 0 12px 0;
+    margin:0 0 10px 0;
 }
 
-input{
+input, button{
     width:100%;
     padding:12px;
     border-radius:10px;
     border:1px solid #374151;
+    margin-top:8px;
+    font-size:14px;
+}
+
+input{
     background:#0b1220;
     color:white;
-    margin-bottom:10px;
     outline:none;
 }
 
 button{
-    width:100%;
-    padding:12px;
-    border:0;
-    border-radius:10px;
     background:#38bdf8;
-    color:black;
+    border:none;
     font-weight:600;
+    cursor:pointer;
+}
+
+.channel-item{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:8px;
+    border:1px solid #1f2937;
+    border-radius:10px;
+    margin-top:6px;
+    background:#0b1220;
+}
+
+.small{
+    font-size:12px;
+    color:#94a3b8;
 }
 
 .grid{
     display:grid;
     grid-template-columns:1fr 1fr;
     gap:10px;
-    margin-top:12px;
 }
 
 .box{
@@ -69,22 +85,11 @@ button{
     padding:10px;
 }
 
-.label{
-    font-size:12px;
-    color:#94a3b8;
-}
-
-.value{
-    font-size:16px;
-    font-weight:600;
-    margin-top:4px;
-}
-
 .big{
-    font-size:26px;
+    font-size:24px;
     color:#38bdf8;
+    font-weight:700;
 }
-
 </style>
 </head>
 
@@ -93,46 +98,43 @@ button{
 <div class="container">
 
 <div class="card">
-<h1>📊 YouTube Goal Tracker</h1>
+<h1>📊 YouTube Dashboard</h1>
 
-<input id="handle" placeholder="@channel або Channel ID">
-<input id="goal" type="number" placeholder="Ціль (наприклад 1000)" value="1000">
-
-<button onclick="loadData()">Оновити</button>
+<input id="channelInput" placeholder="@channel або ID">
+<button onclick="addChannel()">➕ Додати канал</button>
 </div>
 
 <div class="card">
-<h1 id="title">Введіть канал</h1>
+<h1>📌 Канали</h1>
+<div id="channels"></div>
+</div>
+
+<div class="card">
+<h1 id="title">Завантаження...</h1>
 
 <div class="grid">
 
 <div class="box">
-<div class="label">Підписники</div>
-<div id="subs" class="value big">-</div>
+<div class="small">Підписники</div>
+<div id="subs" class="big">-</div>
 </div>
 
 <div class="box">
-<div class="label">Вік</div>
-<div id="daysOld" class="value">-</div>
+<div class="small">Вік</div>
+<div id="daysOld">-</div>
 </div>
 
 <div class="box">
-<div class="label">Ріст / день</div>
-<div id="avg" class="value">-</div>
+<div class="small">Ріст/день</div>
+<div id="avg">-</div>
 </div>
 
 <div class="box">
-<div class="label">До цілі</div>
-<div id="remaining" class="value">-</div>
-</div>
-
-<div class="box" style="grid-column:span 2;">
-<div class="label">📅 Дата досягнення</div>
-<div id="date" class="value">-</div>
+<div class="small">До цілі</div>
+<div id="remaining">-</div>
 </div>
 
 </div>
-
 </div>
 
 </div>
@@ -140,15 +142,62 @@ button{
 <script>
 
 const API = "https://youtube-stats-api.oleh-strilets.workers.dev";
+const GOAL = 1000;
 
-async function loadData(){
+let channels = [];
 
-    const handle = document.getElementById("handle").value;
-    const goal = Number(document.getElementById("goal").value || 1000);
+function loadStorage(){
+    const saved = localStorage.getItem("yt_channels");
 
-    const url = `${API}?handle=${encodeURIComponent(handle)}`;
+    if(saved){
+        channels = JSON.parse(saved);
+    } else {
+        // ⭐ ДЕФОЛТНИЙ КАНАЛ
+        channels = ["@BaarenSecrets"];
+        saveStorage();
+    }
+}
 
-    const res = await fetch(url);
+function saveStorage(){
+    localStorage.setItem("yt_channels", JSON.stringify(channels));
+}
+
+function renderChannels(){
+    const el = document.getElementById("channels");
+    el.innerHTML = "";
+
+    channels.forEach(ch => {
+
+        const div = document.createElement("div");
+        div.className = "channel-item";
+
+        div.innerHTML = `
+            <span>${ch}</span>
+            <button onclick="loadChannel('${ch}')">Відкрити</button>
+        `;
+
+        el.appendChild(div);
+    });
+}
+
+function addChannel(){
+    const input = document.getElementById("channelInput");
+    const value = input.value.trim();
+
+    if(!value) return;
+
+    if(!channels.includes(value)){
+        channels.push(value);
+        saveStorage();
+        renderChannels();
+    }
+
+    input.value = "";
+}
+
+async function loadChannel(handle){
+
+    const res = await fetch(`${API}?handle=${encodeURIComponent(handle)}`);
     const data = await res.json();
 
     if(data.error){
@@ -157,12 +206,14 @@ async function loadData(){
     }
 
     document.getElementById("title").textContent = data.title;
-    document.getElementById("subs").textContent = data.subscribers.toLocaleString();
+
+    document.getElementById("subs").textContent =
+        data.subscribers.toLocaleString();
 
     const created = new Date(data.createdAt);
     const now = new Date();
 
-    const days = Math.floor((now - created)/(1000*60*60*24));
+    const days = Math.floor((now-created)/(1000*60*60*24));
     document.getElementById("daysOld").textContent = days;
 
     const avg = data.subscribers / days;
@@ -170,22 +221,17 @@ async function loadData(){
 
     let remaining = 0;
 
-    if(data.subscribers < goal && avg > 0){
-        remaining = Math.ceil((goal - data.subscribers) / avg);
+    if(data.subscribers < GOAL && avg > 0){
+        remaining = Math.ceil((GOAL - data.subscribers)/avg);
     }
 
     document.getElementById("remaining").textContent = remaining;
-
-    const target = new Date();
-    target.setDate(target.getDate() + remaining);
-
-    document.getElementById("date").textContent =
-        target.toLocaleDateString("uk-UA", {
-            year:"numeric",
-            month:"long",
-            day:"numeric"
-        });
 }
+
+// INIT
+loadStorage();
+renderChannels();
+loadChannel(channels[0]);
 
 </script>
 
