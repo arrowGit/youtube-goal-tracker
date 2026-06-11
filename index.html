@@ -330,7 +330,6 @@ function load(){
     const savedActive = localStorage.getItem("yt_active_channel");
     activeChannel = savedActive || channels[0];
 
-    renderGoalOptions();
     loadChannel(activeChannel);
 }
 
@@ -397,7 +396,6 @@ function closeMenu(){
 
 function selectChannel(ch){
     switchToChannel(ch);
-    renderGoalOptions();
 }
 
 function buildSelect(){
@@ -440,7 +438,7 @@ async function loadChannel(handle){
     current = data;
 
     document.getElementById("title").textContent = data.title;
-    document.getElementById("subs").textContent = data.subscribers.toLocaleString() + subsCase(data.subscribers.toLocaleString());
+    document.getElementById("subs").textContent = data.subscribers.toLocaleString() + subsCase(data.subscribers);
 
     const created = new Date(data.createdAt);
     document.getElementById("created").textContent =
@@ -464,18 +462,6 @@ function switchToChannel(ch){
 }
 
 /* STATS */
-function renderGoalOptions(){
-
-    const sel = document.getElementById("goalSelect");
-
-    let opts = [1000,5000,10000,50000,100000];
-
-    sel.innerHTML = opts.map(v =>
-        `<option value="${v}">${v}</option>`
-    ).join("");
-
-    document.getElementById("goalInput").value = 1000;
-}
 
 function updateGoalUI(){
 
@@ -696,7 +682,10 @@ function updateStats(){
     const now = new Date();
     const created = new Date(current.createdAt);
 
-    const days = Math.floor((now-created)/(1000*60*60*24));
+    const days = Math.max(
+        1,
+        Math.floor((now-created)/(1000*60*60*24))
+    );
 
     const avg = current.subscribers / days;
 
