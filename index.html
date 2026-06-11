@@ -294,9 +294,21 @@ function toggleMenu(){
 
 /* MODAL */
 function openAdd(){
+
     closeMenu();
     mode = "add";
-    document.getElementById("modalTitle").textContent = "Додати канал";
+
+    document.getElementById("modalHeader").textContent = "Додати канал";
+
+    document.getElementById("modalBody").innerHTML = `
+        <input id="channelInput" placeholder="@handle">
+
+        <button onclick="saveChannel()">Зберегти</button>
+        <button onclick="closeModal()" style="background:#1f2937;">
+            Скасувати
+        </button>
+    `;
+
     document.getElementById("modal").style.display = "flex";
 }
 
