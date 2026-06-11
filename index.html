@@ -469,19 +469,19 @@ function daysCase(qty){
 
     // 1. Виняток для чисел, що закінчуються на 11-14
     if (lastTwoDigits >= 11 && lastTwoDigits <= 14) {
-        return "днів";
+        return " днів";
     }
 
     // 2. Правило для останньої цифри
     if (lastDigit === 1) {
-        return "день";
+        return " день";
     }
     if (lastDigit >= 2 && lastDigit <= 4) {
-        return "дні";
+        return " дні";
     }
     
     // Для всіх інших цифр (0, 5, 6, 7, 8, 9)
-    return "днів";
+    return " днів";
 }
 
     
