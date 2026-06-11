@@ -484,6 +484,27 @@ function daysCase(qty){
     return " днів";
 }
 
+function subsCase(qty){
+    const absNumber = Math.abs(qty);
+    const lastTwoDigits = absNumber % 100;
+    const lastDigit = absNumber % 10;
+
+    // 1. Виняток для чисел, що закінчуються на 11-14
+    if (lastTwoDigits >= 11 && lastTwoDigits <= 14) {
+        return " підписників";
+    }
+
+    // 2. Правило для останньої цифри
+    if (lastDigit === 1) {
+        return " підписник";
+    }
+    if (lastDigit >= 2 && lastDigit <= 4) {
+        return " підписники";
+    }
+    
+    // Для всіх інших цифр (0, 5, 6, 7, 8, 9)
+    return " підписників";
+}
     
 /* DETAIL TOGGLE */
 function toggleDetails(){
