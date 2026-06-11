@@ -343,9 +343,7 @@ function closeMenu(){
 }
 
 function selectChannel(ch){
-    setActiveChannel(ch);
-    closeModal();
-    loadChannel(ch);
+    switchToChannel(ch);
     renderGoalOptions();
 }
 
@@ -361,20 +359,25 @@ function closeModal(){
 /* SAVE CHANNEL */
 function saveChannel(){
 
-    const val = document.getElementById("channelInput").value;
+    const val = document.getElementById("channelInput").value.trim();
+
+    if(!val) return;
 
     if(mode === "add"){
+
         if(!channels.includes(val)){
             channels.push(val);
             save();
         }
+
+        // ⭐ ВАЖЛИВО: робимо його активним
+        switchToChannel(val);
+
     } else {
-        loadChannel(val);
+        switchToChannel(val);
     }
-
-    closeModal();
 }
-
+    
 /* LOAD CHANNEL */
 async function loadChannel(handle){
 
@@ -398,6 +401,12 @@ async function loadChannel(handle){
     document.getElementById("avatar").src = avatar;
 
     updateStats();
+}
+
+function switchToChannel(ch){
+    setActiveChannel(ch);
+    closeModal();
+    loadChannel(ch);
 }
 
 /* STATS */
