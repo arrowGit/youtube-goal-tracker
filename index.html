@@ -34,16 +34,17 @@ h1{
     margin:0 0 10px 0;
 }
 
-input, button{
+input, select, button{
     width:100%;
     padding:12px;
     border-radius:10px;
     border:1px solid #374151;
     margin-top:8px;
     font-size:14px;
+    box-sizing:border-box;
 }
 
-input{
+input, select{
     background:#0b1220;
     color:white;
     outline:none;
@@ -54,22 +55,6 @@ button{
     border:none;
     font-weight:600;
     cursor:pointer;
-}
-
-.channel-item{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    padding:8px;
-    border:1px solid #1f2937;
-    border-radius:10px;
-    margin-top:6px;
-    background:#0b1220;
-}
-
-.small{
-    font-size:12px;
-    color:#94a3b8;
 }
 
 .grid{
@@ -90,6 +75,11 @@ button{
     color:#38bdf8;
     font-weight:700;
 }
+
+.small{
+    font-size:12px;
+    color:#94a3b8;
+}
 </style>
 </head>
 
@@ -97,18 +87,24 @@ button{
 
 <div class="container">
 
+<!-- ДОДАВАННЯ КАНАЛУ -->
 <div class="card">
-<h1>📊 YouTube Dashboard</h1>
+<h1>➕ Додати канал</h1>
 
 <input id="channelInput" placeholder="@channel або ID">
-<button onclick="addChannel()">➕ Додати канал</button>
+<button onclick="addChannel()">Додати</button>
 </div>
 
+<!-- ВИБІР КАНАЛУ -->
 <div class="card">
-<h1>📌 Канали</h1>
-<div id="channels"></div>
+<h1>📌 Канал</h1>
+
+<select id="channelSelect" onchange="onChannelChange()"></select>
+
+<input id="goalInput" type="number" value="1000" placeholder="Ціль підписників" oninput="updateStats()">
 </div>
 
+<!-- СТАТИСТИКА -->
 <div class="card">
 <h1 id="title">Завантаження...</h1>
 
@@ -120,12 +116,12 @@ button{
 </div>
 
 <div class="box">
-<div class="small">Вік</div>
+<div class="small">Вік каналу</div>
 <div id="daysOld">-</div>
 </div>
 
 <div class="box">
-<div class="small">Ріст/день</div>
+<div class="small">Ріст / день</div>
 <div id="avg">-</div>
 </div>
 
@@ -134,7 +130,13 @@ button{
 <div id="remaining">-</div>
 </div>
 
+<div class="box" style="grid-column:span 2;">
+<div class="small">📅 Дата досягнення</div>
+<div id="date">-</div>
 </div>
+
+</div>
+
 </div>
 
 </div>
@@ -142,9 +144,9 @@ button{
 <script>
 
 const API = "https://youtube-stats-api.oleh-strilets.workers.dev";
-const GOAL = 1000;
 
 let channels = [];
+let currentData = null;
 
 function loadStorage(){
     const saved = localStorage.getItem("yt_channels");
@@ -152,7 +154,6 @@ function loadStorage(){
     if(saved){
         channels = JSON.parse(saved);
     } else {
-        // ⭐ ДЕФОЛТНИЙ КАНАЛ
         channels = ["@BaarenSecrets"];
         saveStorage();
     }
@@ -162,37 +163,37 @@ function saveStorage(){
     localStorage.setItem("yt_channels", JSON.stringify(channels));
 }
 
-function renderChannels(){
-    const el = document.getElementById("channels");
-    el.innerHTML = "";
+function renderSelect(){
+
+    const select = document.getElementById("channelSelect");
+    select.innerHTML = "";
 
     channels.forEach(ch => {
-
-        const div = document.createElement("div");
-        div.className = "channel-item";
-
-        div.innerHTML = `
-            <span>${ch}</span>
-            <button onclick="loadChannel('${ch}')">Відкрити</button>
-        `;
-
-        el.appendChild(div);
+        const opt = document.createElement("option");
+        opt.value = ch;
+        opt.textContent = ch;
+        select.appendChild(opt);
     });
 }
 
 function addChannel(){
     const input = document.getElementById("channelInput");
-    const value = input.value.trim();
+    const val = input.value.trim();
 
-    if(!value) return;
+    if(!val) return;
 
-    if(!channels.includes(value)){
-        channels.push(value);
+    if(!channels.includes(val)){
+        channels.push(val);
         saveStorage();
-        renderChannels();
+        renderSelect();
     }
 
     input.value = "";
+}
+
+function onChannelChange(){
+    const ch = document.getElementById("channelSelect").value;
+    loadChannel(ch);
 }
 
 async function loadChannel(handle){
@@ -205,32 +206,54 @@ async function loadChannel(handle){
         return;
     }
 
+    currentData = data;
+
     document.getElementById("title").textContent = data.title;
 
-    document.getElementById("subs").textContent =
-        data.subscribers.toLocaleString();
+    updateStats();
+}
 
-    const created = new Date(data.createdAt);
+function updateStats(){
+
+    if(!currentData) return;
+
+    const goal = Number(document.getElementById("goalInput").value || 1000);
+
+    const subs = currentData.subscribers;
+    const created = new Date(currentData.createdAt);
     const now = new Date();
 
     const days = Math.floor((now-created)/(1000*60*60*24));
-    document.getElementById("daysOld").textContent = days;
 
-    const avg = data.subscribers / days;
+    const avg = subs / days;
+
+    document.getElementById("subs").textContent = subs.toLocaleString();
+    document.getElementById("daysOld").textContent = days;
     document.getElementById("avg").textContent = avg.toFixed(2);
 
     let remaining = 0;
 
-    if(data.subscribers < GOAL && avg > 0){
-        remaining = Math.ceil((GOAL - data.subscribers)/avg);
+    if(subs < goal && avg > 0){
+        remaining = Math.ceil((goal - subs) / avg);
+        document.getElementById("remaining").textContent = remaining + " днів";
+    } else {
+        document.getElementById("remaining").textContent = "Досягнуто";
     }
 
-    document.getElementById("remaining").textContent = remaining;
+    const targetDate = new Date();
+    targetDate.setDate(targetDate.getDate() + remaining);
+
+    document.getElementById("date").textContent =
+        targetDate.toLocaleDateString("uk-UA", {
+            year:"numeric",
+            month:"long",
+            day:"numeric"
+        });
 }
 
 // INIT
 loadStorage();
-renderChannels();
+renderSelect();
 loadChannel(channels[0]);
 
 </script>
