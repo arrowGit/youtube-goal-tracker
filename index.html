@@ -3,113 +3,135 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>YouTube Goal Tracker</title>
+<title>YouTube Tracker</title>
 
 <style>
 body{
-    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
-    background:#0f172a;
-    color:#e2e8f0;
     margin:0;
+    font-family: system-ui, Arial;
+    background:#0b1220;
+    color:#e5e7eb;
     display:flex;
     justify-content:center;
-    padding:40px 15px;
+    padding:16px;
+}
+
+.container{
+    width:100%;
+    max-width:520px;
 }
 
 .card{
-    width:100%;
-    max-width:720px;
     background:#111827;
     border:1px solid #1f2937;
     border-radius:16px;
-    padding:24px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    padding:16px;
+    margin-top:12px;
 }
 
 h1{
-    margin:0 0 20px 0;
-    font-size:22px;
-    color:#f8fafc;
+    font-size:18px;
+    margin:0 0 12px 0;
+}
+
+input{
+    width:100%;
+    padding:12px;
+    border-radius:10px;
+    border:1px solid #374151;
+    background:#0b1220;
+    color:white;
+    margin-bottom:10px;
+    outline:none;
+}
+
+button{
+    width:100%;
+    padding:12px;
+    border:0;
+    border-radius:10px;
+    background:#38bdf8;
+    color:black;
+    font-weight:600;
 }
 
 .grid{
     display:grid;
     grid-template-columns:1fr 1fr;
-    gap:16px;
+    gap:10px;
+    margin-top:12px;
 }
 
 .box{
     background:#0b1220;
     border:1px solid #1f2937;
     border-radius:12px;
-    padding:14px;
+    padding:10px;
 }
 
 .label{
-    font-size:13px;
+    font-size:12px;
     color:#94a3b8;
 }
 
 .value{
-    font-size:20px;
+    font-size:16px;
     font-weight:600;
-    margin-top:6px;
-    color:#e2e8f0;
+    margin-top:4px;
 }
 
 .big{
-    font-size:34px;
-    font-weight:800;
+    font-size:26px;
     color:#38bdf8;
 }
 
-.highlight{
-    color:#22c55e;
-}
-
-.warning{
-    color:#f59e0b;
-}
 </style>
 </head>
 
 <body>
 
-<div class="card">
+<div class="container">
 
-<h1 id="channelName">Завантаження...</h1>
+<div class="card">
+<h1>📊 YouTube Goal Tracker</h1>
+
+<input id="handle" placeholder="@channel або Channel ID">
+<input id="goal" type="number" placeholder="Ціль (наприклад 1000)" value="1000">
+
+<button onclick="loadData()">Оновити</button>
+</div>
+
+<div class="card">
+<h1 id="title">Введіть канал</h1>
 
 <div class="grid">
 
-    <div class="box">
-        <div class="label">Підписники</div>
-        <div id="subs" class="value big">-</div>
-    </div>
+<div class="box">
+<div class="label">Підписники</div>
+<div id="subs" class="value big">-</div>
+</div>
 
-    <div class="box">
-        <div class="label">Дата створення</div>
-        <div id="created" class="value">-</div>
-    </div>
+<div class="box">
+<div class="label">Вік</div>
+<div id="daysOld" class="value">-</div>
+</div>
 
-    <div class="box">
-        <div class="label">Вік каналу</div>
-        <div id="daysOld" class="value">-</div>
-    </div>
+<div class="box">
+<div class="label">Ріст / день</div>
+<div id="avg" class="value">-</div>
+</div>
 
-    <div class="box">
-        <div class="label">Середній приріст</div>
-        <div id="avg" class="value">-</div>
-    </div>
+<div class="box">
+<div class="label">До цілі</div>
+<div id="remaining" class="value">-</div>
+</div>
 
-    <div class="box">
-        <div class="label">До 1000 підписників</div>
-        <div id="remaining" class="value warning">-</div>
-    </div>
+<div class="box" style="grid-column:span 2;">
+<div class="label">📅 Дата досягнення</div>
+<div id="date" class="value">-</div>
+</div>
 
-    <div class="box">
-        <div class="label">📅 Прогноз до 1000</div>
-        <div id="targetDate" class="value highlight">-</div>
-    </div>
+</div>
 
 </div>
 
@@ -117,69 +139,53 @@ h1{
 
 <script>
 
-const CHANNEL_ID = "UCOIAIj_CYaYzMHBR4L9OMFA";
-const API_URL = "https://youtube-stats-api.oleh-strilets.workers.dev";
-const GOAL = 1000;
+const API = "https://youtube-stats-api.oleh-strilets.workers.dev";
 
 async function loadData(){
 
-    const res = await fetch(`${API_URL}?channelId=${CHANNEL_ID}`);
+    const handle = document.getElementById("handle").value;
+    const goal = Number(document.getElementById("goal").value || 1000);
+
+    const url = `${API}?handle=${encodeURIComponent(handle)}`;
+
+    const res = await fetch(url);
     const data = await res.json();
 
-    // Назва
-    document.getElementById("channelName").textContent =
-        data.title;
+    if(data.error){
+        alert(data.error);
+        return;
+    }
 
-    // Підписники
-    document.getElementById("subs").textContent =
-        data.subscribers.toLocaleString();
+    document.getElementById("title").textContent = data.title;
+    document.getElementById("subs").textContent = data.subscribers.toLocaleString();
 
-    // Дата створення
-    const createdDate = new Date(data.createdAt);
-    document.getElementById("created").textContent =
-        createdDate.toLocaleDateString("uk-UA");
-
-    // Вік каналу
+    const created = new Date(data.createdAt);
     const now = new Date();
-    const daysOld = Math.floor((now - createdDate) / (1000*60*60*24));
-    document.getElementById("daysOld").textContent = daysOld;
 
-    // Середній ріст
-    const avgGrowth = data.subscribers / daysOld;
-    document.getElementById("avg").textContent =
-        avgGrowth.toFixed(2) + " / день";
+    const days = Math.floor((now - created)/(1000*60*60*24));
+    document.getElementById("daysOld").textContent = days;
 
-    // До цілі
-    let remainingDays = 0;
+    const avg = data.subscribers / days;
+    document.getElementById("avg").textContent = avg.toFixed(2);
 
-    if(data.subscribers < GOAL && avgGrowth > 0){
-        remainingDays = Math.ceil((GOAL - data.subscribers) / avgGrowth);
-        document.getElementById("remaining").textContent =
-            remainingDays + " днів";
-    } else {
-        document.getElementById("remaining").textContent = "Досягнуто!";
+    let remaining = 0;
+
+    if(data.subscribers < goal && avg > 0){
+        remaining = Math.ceil((goal - data.subscribers) / avg);
     }
 
-    // 📅 ДАТА ДОСЯГНЕННЯ ЦІЛІ
-    if(avgGrowth > 0){
+    document.getElementById("remaining").textContent = remaining;
 
-        const targetDate = new Date();
-        targetDate.setDate(targetDate.getDate() + remainingDays);
+    const target = new Date();
+    target.setDate(target.getDate() + remaining);
 
-        document.getElementById("targetDate").textContent =
-            targetDate.toLocaleDateString("uk-UA", {
-                year: "numeric",
-                month: "long",
-                day: "numeric"
-            });
-
-    } else {
-        document.getElementById("targetDate").textContent =
-            "Недостатньо даних";
-    }
+    document.getElementById("date").textContent =
+        target.toLocaleDateString("uk-UA", {
+            year:"numeric",
+            month:"long",
+            day:"numeric"
+        });
 }
-
-loadData();
 
 </script>
 
