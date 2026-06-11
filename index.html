@@ -13,48 +13,89 @@ body{
     color:#e5e7eb;
     display:flex;
     justify-content:center;
-    padding:16px;
+    padding:14px;
 }
 
 .container{
     width:100%;
-    max-width:520px;
+    max-width:560px;
 }
 
-.card{
+/* TOP BAR */
+.topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
     background:#111827;
     border:1px solid #1f2937;
     border-radius:16px;
-    padding:14px;
-    margin-bottom:12px;
-}
-
-h1{
-    font-size:18px;
-    margin:0 0 10px 0;
-}
-
-input, select, button{
-    width:100%;
     padding:12px;
-    border-radius:10px;
-    border:1px solid #374151;
-    margin-top:8px;
-    font-size:14px;
-    box-sizing:border-box;
+    position:relative;
 }
 
-input, select{
-    background:#0b1220;
-    color:white;
-    outline:none;
+.left{
+    display:flex;
+    gap:10px;
+    align-items:center;
 }
 
-button{
-    background:#38bdf8;
-    border:none;
-    font-weight:600;
+.avatar{
+    width:48px;
+    height:48px;
+    border-radius:50%;
+    object-fit:cover;
+    background:#1f2937;
+}
+
+.title{
+    font-weight:700;
+}
+
+.subtext{
+    font-size:12px;
+    color:#94a3b8;
+}
+
+.menu-btn{
+    font-size:22px;
     cursor:pointer;
+    padding:6px 10px;
+}
+
+/* MENU */
+.menu{
+    position:absolute;
+    right:10px;
+    top:60px;
+    background:#111827;
+    border:1px solid #1f2937;
+    border-radius:12px;
+    width:180px;
+    display:none;
+    z-index:10;
+}
+
+.menu button{
+    width:100%;
+    padding:10px;
+    background:none;
+    border:none;
+    color:white;
+    text-align:left;
+    cursor:pointer;
+}
+
+.menu button:hover{
+    background:#0b1220;
+}
+
+/* CARDS */
+.card{
+    margin-top:12px;
+    background:#111827;
+    border:1px solid #1f2937;
+    border-radius:16px;
+    padding:12px;
 }
 
 .grid{
@@ -70,15 +111,55 @@ button{
     padding:10px;
 }
 
-.big{
-    font-size:24px;
-    color:#38bdf8;
-    font-weight:700;
-}
-
 .small{
     font-size:12px;
     color:#94a3b8;
+}
+
+.big{
+    font-size:20px;
+    font-weight:700;
+    color:#38bdf8;
+}
+
+/* BUTTONS */
+button{
+    width:100%;
+    padding:12px;
+    border-radius:12px;
+    border:none;
+    margin-top:10px;
+    background:#38bdf8;
+    font-weight:700;
+    cursor:pointer;
+}
+
+/* MODAL */
+.modal{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.6);
+    display:none;
+    align-items:center;
+    justify-content:center;
+}
+
+.modal-content{
+    background:#111827;
+    padding:16px;
+    border-radius:14px;
+    width:90%;
+    max-width:360px;
+}
+
+input, select{
+    width:100%;
+    padding:10px;
+    margin-top:8px;
+    border-radius:10px;
+    border:1px solid #1f2937;
+    background:#0b1220;
+    color:white;
 }
 </style>
 </head>
@@ -87,58 +168,88 @@ button{
 
 <div class="container">
 
-<!-- ДОДАВАННЯ КАНАЛУ -->
-<div class="card">
-<h1>➕ Додати канал</h1>
+<!-- TOPBAR -->
+<div class="topbar">
 
-<input id="channelInput" placeholder="@channel або ID">
-<button onclick="addChannel()">Додати</button>
+<div class="left">
+<img id="avatar" class="avatar">
+
+<div>
+<div class="title" id="title">Завантаження...</div>
+<div class="subtext">
+<span id="subs">-</span> підписників •
+<span id="created">-</span>
+</div>
+</div>
 </div>
 
-<!-- ВИБІР КАНАЛУ -->
-<div class="card">
-<h1>📌 Канал</h1>
+<div class="menu-btn" onclick="toggleMenu()">⋮</div>
 
-<select id="channelSelect" onchange="onChannelChange()"></select>
-
-<input id="goalInput" type="number" value="1000" placeholder="Ціль підписників" oninput="updateStats()">
+<div class="menu" id="menu">
+<button onclick="openAdd()">➕ Додати канал</button>
+<button onclick="openSwitch()">🔄 Змінити канал</button>
 </div>
 
-<!-- СТАТИСТИКА -->
-<div class="card">
-<h1 id="title">Завантаження...</h1>
+</div>
+
+<!-- STATISTICS -->
+<div class="card" id="statsBlock">
 
 <div class="grid">
-
-<div class="box">
-<div class="small">Підписники</div>
-<div id="subs" class="big">-</div>
-</div>
-
 <div class="box">
 <div class="small">Вік каналу</div>
-<div id="daysOld">-</div>
+<div id="daysOld" class="big">-</div>
 </div>
 
 <div class="box">
 <div class="small">Ріст / день</div>
-<div id="avg">-</div>
+<div id="avg" class="big">-</div>
+</div>
+</div>
+
+<div class="card">
+<div class="small">Ціль</div>
+<select id="goalSelect" onchange="updateStats()"></select>
+<input id="goalInput" type="number" oninput="updateStats()">
+</div>
+
+<div class="grid">
+<div class="box">
+<div class="small">До цілі</div>
+<div id="remaining" class="big">-</div>
 </div>
 
 <div class="box">
-<div class="small">До цілі</div>
-<div id="remaining">-</div>
+<div class="small">Дата досягнення</div>
+<div id="date" class="big">-</div>
+</div>
 </div>
 
-<div class="box" style="grid-column:span 2;">
-<div class="small">📅 Дата досягнення</div>
-<div id="date">-</div>
-</div>
+<button onclick="toggleDetails()">📊 Детальна статистика</button>
 
 </div>
 
+<!-- DETAIL -->
+<div class="card" id="detailBlock" style="display:none;">
+<h3>📊 Детальна статистика</h3>
+<p>Тут буде наступний рівень аналітики</p>
+<button onclick="toggleDetails()">⬅ Назад</button>
 </div>
 
+</div>
+
+<!-- MODAL -->
+<div class="modal" id="modal">
+<div class="modal-content">
+
+<div id="modalTitle">Додати канал</div>
+
+<input id="channelInput" placeholder="@handle">
+
+<button onclick="saveChannel()">Зберегти</button>
+<button onclick="closeModal()" style="background:#1f2937;">Скасувати</button>
+
+</div>
 </div>
 
 <script>
@@ -146,115 +257,168 @@ button{
 const API = "https://youtube-stats-api.oleh-strilets.workers.dev";
 
 let channels = [];
-let currentData = null;
+let current = null;
+let mode = "add";
 
-function loadStorage(){
+/* INIT */
+load();
+
+function load(){
     const saved = localStorage.getItem("yt_channels");
 
     if(saved){
         channels = JSON.parse(saved);
     } else {
         channels = ["@BaarenSecrets"];
-        saveStorage();
+        save();
     }
+
+    renderGoalOptions();
+    loadChannel(channels[0]);
 }
 
-function saveStorage(){
+/* STORAGE */
+function save(){
     localStorage.setItem("yt_channels", JSON.stringify(channels));
 }
 
-function renderSelect(){
-
-    const select = document.getElementById("channelSelect");
-    select.innerHTML = "";
-
-    channels.forEach(ch => {
-        const opt = document.createElement("option");
-        opt.value = ch;
-        opt.textContent = ch;
-        select.appendChild(opt);
-    });
+/* MENU */
+function toggleMenu(){
+    const m = document.getElementById("menu");
+    m.style.display = m.style.display === "block" ? "none" : "block";
 }
 
-function addChannel(){
+/* MODAL */
+function openAdd(){
+    mode = "add";
+    document.getElementById("modalTitle").textContent = "Додати канал";
+    document.getElementById("modal").style.display = "flex";
+}
+
+function openSwitch(){
+    mode = "switch";
+
     const input = document.getElementById("channelInput");
-    const val = input.value.trim();
+    input.outerHTML = buildSelect();
 
-    if(!val) return;
+    document.getElementById("modalTitle").textContent = "Змінити канал";
+    document.getElementById("modal").style.display = "flex";
+}
 
-    if(!channels.includes(val)){
-        channels.push(val);
-        saveStorage();
-        renderSelect();
+function buildSelect(){
+    let options = channels.map(c => `<option value="${c}">${c}</option>`).join("");
+    return `<select id="channelInput">${options}</select>`;
+}
+
+function closeModal(){
+    document.getElementById("modal").style.display = "none";
+    location.reload();
+}
+
+/* SAVE CHANNEL */
+function saveChannel(){
+
+    const val = document.getElementById("channelInput").value;
+
+    if(mode === "add"){
+        if(!channels.includes(val)){
+            channels.push(val);
+            save();
+        }
+    } else {
+        loadChannel(val);
     }
 
-    input.value = "";
+    closeModal();
 }
 
-function onChannelChange(){
-    const ch = document.getElementById("channelSelect").value;
-    loadChannel(ch);
-}
-
+/* LOAD CHANNEL */
 async function loadChannel(handle){
 
     const res = await fetch(`${API}?handle=${encodeURIComponent(handle)}`);
     const data = await res.json();
 
-    if(data.error){
-        alert(data.error);
-        return;
-    }
-
-    currentData = data;
+    current = data;
 
     document.getElementById("title").textContent = data.title;
+    document.getElementById("subs").textContent = data.subscribers.toLocaleString();
+
+    const created = new Date(data.createdAt);
+    document.getElementById("created").textContent =
+        created.toLocaleDateString("uk-UA");
+
+    const avatar = data.thumbnails?.medium?.url || "";
+    document.getElementById("avatar").src = avatar;
 
     updateStats();
 }
 
+/* STATS */
+function renderGoalOptions(){
+
+    const sel = document.getElementById("goalSelect");
+
+    let opts = [1000,5000,10000,50000,100000];
+
+    sel.innerHTML = opts.map(v =>
+        `<option value="${v}">${v}</option>`
+    ).join("");
+
+    document.getElementById("goalInput").value = 1000;
+}
+
 function updateStats(){
 
-    if(!currentData) return;
+    if(!current) return;
 
-    const goal = Number(document.getElementById("goalInput").value || 1000);
+    const goal = Number(
+        document.getElementById("goalSelect").value ||
+        document.getElementById("goalInput").value
+    );
 
-    const subs = currentData.subscribers;
-    const created = new Date(currentData.createdAt);
     const now = new Date();
+    const created = new Date(current.createdAt);
 
     const days = Math.floor((now-created)/(1000*60*60*24));
 
-    const avg = subs / days;
+    const avg = current.subscribers / days;
 
-    document.getElementById("subs").textContent = subs.toLocaleString();
     document.getElementById("daysOld").textContent = days;
     document.getElementById("avg").textContent = avg.toFixed(2);
 
     let remaining = 0;
 
-    if(subs < goal && avg > 0){
-        remaining = Math.ceil((goal - subs) / avg);
+    if(current.subscribers < goal && avg > 0){
+        remaining = Math.ceil((goal - current.subscribers) / avg);
         document.getElementById("remaining").textContent = remaining + " днів";
     } else {
         document.getElementById("remaining").textContent = "Досягнуто";
     }
 
-    const targetDate = new Date();
-    targetDate.setDate(targetDate.getDate() + remaining);
+    const date = new Date();
+    date.setDate(date.getDate() + remaining);
 
     document.getElementById("date").textContent =
-        targetDate.toLocaleDateString("uk-UA", {
+        date.toLocaleDateString("uk-UA", {
             year:"numeric",
             month:"long",
             day:"numeric"
         });
 }
 
-// INIT
-loadStorage();
-renderSelect();
-loadChannel(channels[0]);
+/* DETAIL TOGGLE */
+function toggleDetails(){
+    const s = document.getElementById("statsBlock");
+    const d = document.getElementById("detailBlock");
+
+    if(d.style.display === "none"){
+        s.style.display = "none";
+        d.style.display = "block";
+    } else {
+        s.style.display = "block";
+        d.style.display = "none";
+    }
+}
 
 </script>
 
