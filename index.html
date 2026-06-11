@@ -208,9 +208,36 @@ input, select{
 </div>
 
 <div class="card">
-<div class="small">Ціль</div>
-<select id="goalSelect" onchange="updateStats()"></select>
-<input id="goalInput" type="number" oninput="updateStats()">
+<div class="box goal-box">
+
+    <div class="small">Ціль</div>
+
+    <div style="
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+    ">
+
+        <div id="goalValue" class="big">
+            -
+        </div>
+
+        <button
+            id="goalEditBtn"
+            onclick="openGoalSelector()"
+            style="
+                width:40px;
+                height:40px;
+                margin:0;
+                padding:0;
+            "
+        >
+            ✏️
+        </button>
+
+    </div>
+
+</div>
 </div>
 
 <div class="grid">
@@ -254,6 +281,19 @@ input, select{
 <script>
 
 const API = "https://youtube-stats-api.oleh-strilets.workers.dev";
+
+const MILESTONES = [
+    100,
+    500,
+    1000,
+    5000,
+    10000,
+    50000,
+    100000,
+    250000,
+    500000,
+    1000000
+];
 
 let channels = [];
 let current = null;
@@ -400,6 +440,7 @@ async function loadChannel(handle){
     "";
     document.getElementById("avatar").src = avatar;
 
+    updateGoalUI();
     updateStats();
 }
 
@@ -423,15 +464,170 @@ function renderGoalOptions(){
     document.getElementById("goalInput").value = 1000;
 }
 
+function updateGoalUI(){
+
+    const goal = getCurrentGoal();
+
+    document.getElementById("goalValue")
+        .textContent = goal.toLocaleString();
+
+    const settings = getGoalSettings();
+
+    const custom =
+        settings[activeChannel];
+
+    document
+        .getElementById("goalEditBtn")
+        .style.background =
+            custom ? "#ffffff" : "";
+}
+    
+function getGoalSettings() {
+    return JSON.parse(
+        localStorage.getItem("yt_goal_settings") || "{}"
+    );
+}
+
+function saveGoalSettings(settings) {
+    localStorage.setItem(
+        "yt_goal_settings",
+        JSON.stringify(settings)
+    );
+}
+
+function getDefaultGoal(subscribers){
+
+    for(const goal of MILESTONES){
+        if(subscribers < goal){
+            return goal;
+        }
+    }
+
+    return MILESTONES[MILESTONES.length - 1];
+}
+
+function getCurrentGoal(){
+
+    if(!current || !activeChannel){
+        return 1000;
+    }
+
+    const settings = getGoalSettings();
+
+    if(settings[activeChannel]){
+        return settings[activeChannel].value;
+    }
+
+    return getDefaultGoal(current.subscribers);
+}
+
+function openGoalSelector(){
+
+    closeMenu();
+
+    const subscribers = current.subscribers;
+
+    let html = "";
+
+    for(const goal of MILESTONES){
+
+        if(goal <= subscribers){
+            continue;
+        }
+
+        html += `
+        <label style="display:block;margin:8px 0;">
+            <input
+                type="radio"
+                name="goal"
+                value="${goal}">
+            ${goal.toLocaleString()}
+        </label>`;
+    }
+
+    html += `
+    <hr>
+
+    <label>
+        <input
+            type="radio"
+            name="goal"
+            value="custom">
+        Власна ціль
+    </label>
+
+    <input
+        id="customGoal"
+        inputmode="numeric"
+        pattern="[0-9]*"
+        placeholder="Введіть число">
+    `;
+
+    html += `
+    <button onclick="saveGoalSelection()">
+        Зберегти
+    </button>
+    `;
+
+    document.getElementById("modalHeader")
+        .textContent = "Вибір цілі";
+
+    document.getElementById("modalBody")
+        .innerHTML = html;
+
+    document.getElementById("modal")
+        .style.display = "flex";
+}
+
+function saveGoalSelection(){
+
+    const selected =
+        document.querySelector(
+            'input[name="goal"]:checked'
+        );
+
+    const settings =
+        getGoalSettings();
+
+    if(!selected){
+
+        delete settings[activeChannel];
+
+    } else if(selected.value === "custom"){
+
+        const custom =
+            Number(
+                document.getElementById("customGoal").value
+            );
+
+        if(custom > 0){
+
+            settings[activeChannel] = {
+                type:"custom",
+                value:custom
+            };
+        }
+
+    } else {
+
+        settings[activeChannel] = {
+            type:"milestone",
+            value:Number(selected.value)
+        };
+    }
+
+    saveGoalSettings(settings);
+
+    updateGoalUI();
+    updateStats();
+    closeModal();
+}
+    
 function updateStats(){
 
     if(!current) return;
 
-    const goal = Number(
-        document.getElementById("goalSelect").value ||
-        document.getElementById("goalInput").value
-    );
-
+    const goal = getCurrentGoal();
     const now = new Date();
     const created = new Date(current.createdAt);
 
