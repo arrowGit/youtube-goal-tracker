@@ -439,14 +439,14 @@ function updateStats(){
 
     const avg = current.subscribers / days;
 
-    document.getElementById("daysOld").textContent = days + " днів";
+    document.getElementById("daysOld").textContent = days + daysCase(days);
     document.getElementById("avg").textContent = avg.toFixed(2);
 
     let remaining = 0;
 
     if(current.subscribers < goal && avg > 0){
         remaining = Math.ceil((goal - current.subscribers) / avg);
-        document.getElementById("remaining").textContent = remaining + " днів";
+        document.getElementById("remaining").textContent = remaining + daysCase(days);
     } else {
         document.getElementById("remaining").textContent = "Досягнуто";
     }
@@ -462,6 +462,29 @@ function updateStats(){
         });
 }
 
+function daysCase(qty){
+    const absNumber = Math.abs(qty);
+    const lastTwoDigits = absNumber % 100;
+    const lastDigit = absNumber % 10;
+
+    // 1. Виняток для чисел, що закінчуються на 11-14
+    if (lastTwoDigits >= 11 && lastTwoDigits <= 14) {
+        return "днів";
+    }
+
+    // 2. Правило для останньої цифри
+    if (lastDigit === 1) {
+        return "день";
+    }
+    if (lastDigit >= 2 && lastDigit <= 4) {
+        return "дні";
+    }
+    
+    // Для всіх інших цифр (0, 5, 6, 7, 8, 9)
+    return "днів";
+}
+
+    
 /* DETAIL TOGGLE */
 function toggleDetails(){
     const s = document.getElementById("statsBlock");
