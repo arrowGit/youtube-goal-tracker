@@ -1,5 +1,134 @@
-<html>
-   <p>
-    Youtube stats
-  </p> 
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>YouTube Goal Tracker</title>
+
+<style>
+body{
+    font-family:Arial,sans-serif;
+    max-width:700px;
+    margin:40px auto;
+    padding:20px;
+}
+
+.card{
+    border:1px solid #ddd;
+    border-radius:10px;
+    padding:20px;
+}
+
+h1{
+    margin-top:0;
+}
+
+.stat{
+    margin:12px 0;
+    font-size:18px;
+}
+
+.big{
+    font-size:32px;
+    font-weight:bold;
+}
+</style>
+</head>
+<body>
+
+<div class="card">
+
+<h1 id="channelName">Завантаження...</h1>
+
+<div class="stat">
+Підписників:
+<div id="subs" class="big">-</div>
+</div>
+
+<div class="stat">
+Дата створення:
+<span id="created"></span>
+</div>
+
+<div class="stat">
+Вік каналу:
+<span id="daysOld"></span> днів
+</div>
+
+<div class="stat">
+Середній приріст:
+<span id="avg"></span> підписників/день
+</div>
+
+<div class="stat">
+До цілі 1000:
+<span id="remaining"></span> днів
+</div>
+
+</div>
+
+<script>
+
+const CHANNEL_ID = "UCxxxxxxxxxxxxxxxx";
+const API_URL = "https://youtube-stats-api.yourname.workers.dev";
+
+const GOAL = 1000;
+
+async function loadData(){
+
+    const response = await fetch(
+        `${API_URL}?channelId=${CHANNEL_ID}`
+    );
+
+    const data = await response.json();
+
+    document.getElementById("channelName").textContent =
+        data.title;
+
+    document.getElementById("subs").textContent =
+        data.subscribers.toLocaleString();
+
+    const createdDate =
+        new Date(data.createdAt);
+
+    document.getElementById("created").textContent =
+        createdDate.toLocaleDateString("uk-UA");
+
+    const now = new Date();
+
+    const daysOld =
+        Math.floor(
+            (now - createdDate) /
+            (1000 * 60 * 60 * 24)
+        );
+
+    document.getElementById("daysOld").textContent =
+        daysOld;
+
+    const avgGrowth =
+        data.subscribers / daysOld;
+
+    document.getElementById("avg").textContent =
+        avgGrowth.toFixed(2);
+
+    let remainingDays = 0;
+
+    if(data.subscribers < GOAL){
+
+        remainingDays =
+            Math.ceil(
+                (GOAL - data.subscribers) /
+                avgGrowth
+            );
+    }
+
+    document.getElementById("remaining").textContent =
+        remainingDays;
+}
+
+loadData();
+
+</script>
+
+</body>
 </html>
