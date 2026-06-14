@@ -1,0 +1,21 @@
+{
+  "name": "YouTube Dashboard",
+  "short_name": "YT Dashboard",
+  "display": "standalone",
+  "background_color": "#0b1220",
+  "theme_color": "#0b1220",
+  "start_url": "/youtube-goal-tracker/",
+  "scope": "/youtube-goal-tracker/",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
