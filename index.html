@@ -3,6 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="YT Dashboard">
+<meta name="viewport"
+      content="width=device-width,
+      initial-scale=1,
+      viewport-fit=cover">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="manifest" href="manifest.json">
+
 <title>YouTube Dashboard</title>
 
 <style>
@@ -13,7 +23,11 @@ body{
     color:#e5e7eb;
     display:flex;
     justify-content:center;
-    padding:14px;
+    padding:
+        max(14px, env(safe-area-inset-top))
+        14px
+        max(14px, env(safe-area-inset-bottom))
+        14px;
 }
 
 .container{
@@ -419,7 +433,11 @@ function saveChannel(){
 
     if(mode === "add"){
 
-        if(!channels.includes(val)){
+        if(
+            !channels.some(
+                c => c.toLowerCase() === val.toLowerCase()
+            )
+        ){
             channels.push(val);
             save();
         }
@@ -437,6 +455,11 @@ async function loadChannel(handle){
 
     const res = await fetch(`${API}?handle=${encodeURIComponent(handle)}`);
     const data = await res.json();
+    
+    if(data.error){
+        alert(data.error);
+        return;
+    }
 
     current = data;
 
@@ -595,36 +618,17 @@ function openGoalSelector(){
         .style.display = "flex";
     
     setTimeout(() => {
-
-        const input =
-            document.getElementById("customGoal");
+    
+        const input = document.getElementById("customGoal");
+        const radio = document.getElementById("customGoalRadio");
     
         if(!input) return;
     
         input.addEventListener("input", () => {
     
-            input.value =
-                input.value.replace(/\D/g, "");
+            input.value = input.value.replace(/\D/g, "");
     
-        });
-    
-    }, 0);
-    setTimeout(() => {
-
-        const input =
-            document.getElementById("customGoal");
-    
-        const radio =
-            document.getElementById("customGoalRadio");
-    
-        if(!input || !radio) return;
-    
-        input.addEventListener("input", () => {
-    
-            input.value =
-                input.value.replace(/\D/g, "");
-    
-            if(input.value.length > 0){
+            if(radio && input.value.length){
                 radio.checked = true;
             }
     
