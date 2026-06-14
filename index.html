@@ -496,15 +496,15 @@ function updateGoalUI(){
     document.getElementById("goalValue")
         .textContent = goal.toLocaleString() + subsCase(goal);
 
-    const settings = getGoalSettings();
-
-    const custom =
-        settings[activeChannel];
-
+    const goal = getCurrentGoal();
+    const autoGoal = getAutoGoal();
+    
     document
         .getElementById("goalEditBtn")
         .style.background =
-            custom ? "#ffffff" : "";
+            goal !== autoGoal
+                ? "#ffffff"
+                : "transparent";
 }
     
 function getGoalSettings() {
@@ -541,6 +541,15 @@ function getCurrentGoal(){
 
     if(settings[activeChannel]){
         return settings[activeChannel].value;
+    }
+
+    return getDefaultGoal(current.subscribers);
+}
+
+function getAutoGoal(){
+
+    if(!current){
+        return 1000;
     }
 
     return getDefaultGoal(current.subscribers);
@@ -638,7 +647,9 @@ function openGoalSelector(){
 }
 
 function saveGoalSelection(){
-
+    
+    const autoGoal = getAutoGoal();
+    
     const selected =
         document.querySelector(
             'input[name="goal"]:checked'
@@ -659,19 +670,37 @@ function saveGoalSelection(){
             );
 
         if(custom > 0){
-
-            settings[activeChannel] = {
-                type:"custom",
-                value:custom
-            };
+        
+            if(custom === autoGoal){
+        
+                delete settings[activeChannel];
+        
+            } else {
+        
+                settings[activeChannel] = {
+                    type:"custom",
+                    value:custom
+                };
+        
+            }
         }
 
     } else {
 
-        settings[activeChannel] = {
-            type:"milestone",
-            value:Number(selected.value)
-        };
+        const selectedGoal = Number(selected.value);
+        
+        if(selectedGoal === autoGoal){
+        
+            delete settings[activeChannel];
+        
+        } else {
+        
+            settings[activeChannel] = {
+                type:"milestone",
+                value:selectedGoal
+            };
+        
+        }
     }
 
     saveGoalSettings(settings);
