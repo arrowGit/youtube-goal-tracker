@@ -471,7 +471,7 @@ function updateGoalUI(){
     const goal = getCurrentGoal();
 
     document.getElementById("goalValue")
-        .textContent = goal.toLocaleString();
+        .textContent = goal.toLocaleString() + subsCase(goal);
 
     const settings = getGoalSettings();
 
